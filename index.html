@@ -1,0 +1,1071 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🗺️ Leaflet loaded:', typeof L !== 'undefined');
+    
+    // Check if map container exists
+    const mapContainer = document.getElementById('map');
+    console.log('📍 Map container exists:', !!mapContainer);
+    
+    if (mapContainer) {
+        console.log('📦 Map container HTML:', mapContainer.outerHTML);
+    } else {
+        console.log('❌ Map container not found. Checking all divs...');
+        const allDivs = document.querySelectorAll('div');
+        console.log('📋 All divs on page:', allDivs.length);
+        allDivs.forEach(div => {
+            if (div.className.includes('map')) {
+                console.log('🔍 Found map-related div:', div);
+            }
+        });
+    }
+    
+    // Test map creation
+    if (typeof L !== 'undefined' && mapContainer) {
+        try {
+            console.log('🚀 Attempting to create map...');
+            const testMap = L.map('map').setView([24.7136, 46.6753], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(testMap);
+            console.log('✅ Map created successfully!');
+        } catch (error) {
+            console.error('❌ Map creation failed:', error);
+        }
+    }
+});
+</script>
+        
+    <style>
+        body {
+            font-family: 'cairo', sans-serif;
+            margin: 0;
+            padding: 0px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+            direction: rtl;
+        }
+        .form-container {
+            flex: 1;
+            max-width: 800px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .map-container {
+            flex: 1;
+            max-width: 500px;
+            height: 500px;
+            min-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block !important;
+            visibility: visible !important;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+        #map {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 300px !important;
+    z-index: 1 !important;
+    border-radius: 8px;
+}
+
+.leaflet-container {
+    background: #f0f0f0;
+}
+        .map-fallback {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: red;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        button, a.button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        #whatsappLink {
+            background-color: #25D366;
+        }
+        button:hover, a.button:hover {
+            opacity: 0.9;
+        }
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            display: none;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        optgroup {
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        .valuation-method {
+            margin-top: 16px;
+            color: #0c5b1e;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+        .modal-content button {
+            margin: 5px;
+        }
+        .modal-content .error {
+            display: block;
+        }
+        .cancel-btn {
+            background-color: #f44336;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .form-container, .map-container {
+                max-width: 100%;
+            }
+            .map-container {
+                height: 300px;
+                min-height: 200px;
+                margin-top: 20px;
+                order: 2;
+                display: block !important;
+                visibility: visible !important;
+            }
+            .form-container {
+                order: 1;
+            }
+            #map {
+                min-height: 200px;
+                height: 300px;
+            }
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#processingModal .modal-content {
+    text-align: center;
+    padding: 30px;
+}
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script id="leaflet-js-fallback" src=""></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init({
+                publicKey: "cu3f2r_FWETkuj23y",
+            });
+        })();
+    </script>
+<script>
+        function showProcessingModal() {
+            document.getElementById('contactModal').style.display = 'none';
+            document.getElementById('processingModal').style.display = 'block';
+        }
+
+        function hideProcessingModal() {
+            document.getElementById('processingModal').style.display = 'none';
+        }
+
+        function submitContactForm(event) {
+            event.preventDefault();
+            showProcessingModal();
+            
+            // Your existing form submission logic here
+            // Replace this timeout with your actual API call
+            setTimeout(() => {
+                hideProcessingModal();
+                // Show results or redirect
+            }, 3000);
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>حاسبة التقييم العقاري</h2>
+            <form id="propertyForm" onsubmit="showContactModal(event)">
+                <div class="form-group">
+                    <label for="region" class="required">المنطقة:</label>
+                    <select id="region" required>
+                        <option value="">اختر المنطقة</option>
+                        <option value="الرياض">منطقة الرياض</option>
+                        <option value="مكة المكرمة">منطقة مكة المكرمة</option>
+                        <option value="المدينة المنورة">منطقة المدينة المنورة</option>
+                        <option value="القصيم">منطقة القصيم</option>
+                        <option value="الشرقية">المنطقة الشرقية</option>
+                        <option value="عسير">منطقة عسير</option>
+                        <option value="تبوك">منطقة تبوك</option>
+                        <option value="حائل">منطقة حائل</option>
+                        <option value="الحدود الشمالية">منطقة الحدود الشمالية</option>
+                        <option value="جازان">منطقة جازان</option>
+                        <option value="نجران">منطقة نجران</option>
+                        <option value="الباحة">منطقة الباحة</option>
+                        <option value="الجوف">منطقة الجوف</option>
+                    </select>
+                    <div class="error" id="regionError">يرجى اختيار المنطقة</div>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="required">المدينة:</label>
+                    <select id="city" required disabled>
+                        <option value="">اختر المدينة</option>
+                    </select>
+                    <div class="error" id="cityError">يرجى اختيار المدينة</div>
+                </div>
+                <div class="form-group">
+                    <label for="district" class="required">الحي:</label>
+                    <input type="text" id="district" required placeholder="اكتب اسم الحي هنا">
+                    <div class="error" id="districtError">يرجى إدخال اسم الحي</div>
+                </div>
+                <div class="form-group">
+                    <label for="districtType" class="required">تصنيف الحي:</label>
+                    <select id="districtType" required>
+                        <option value="">اختر تصنيف الحي</option>
+                        <option value="قديم">حي قديم</option>
+                        <option value="متوسط">حي متوسط</option>
+                        <option value="راقي">حي راقي</option>
+                    </select>
+                    <div class="error" id="districtTypeError">يرجى اختيار تصنيف الحي</div>
+                </div>
+<div class="form-group">
+                    <label for="propertyType" class="required">نوع العقار:</label>
+                    <select id="propertyType" required>
+                        <option value="">اختر نوع العقار</option>
+                        <optgroup label="العقارات السكنية">
+                            <option value="فيلا">الفلل</option>
+                            <option value="عمارة سكنية">العمائر السكنية</option>
+                            <option value="شقة">الشقق السكنية</option>
+                            <option value="دور">الأدوار المنفصلة</option>
+                            <option value="بيت شعبي">البيوت الشعبية</option>
+                            <option value="استراحة">الاستراحات السكنية</option>
+                        </optgroup>
+                        <optgroup label="العقارات التجارية">
+                            <option value="مبنى تجاري">المباني التجارية</option>
+                            <option value="عمارة تجارية">العمائر التجارية</option>
+                            <option value="برج">الأبراج الإدارية</option>
+                            <option value="محل تجاري">المحلات التجارية</option>
+                            <option value="فندق">الفنادق</option>
+                            <option value="ورشة تجاري">الورش التجارية</option>
+                        </optgroup>
+                        <optgroup label="الأراضي">
+                            <option value="أرض سكنية">أراضي سكنية</option>
+                            <option value="أرض تجارية">أراضي تجارية</option>
+                            <option value="أرض صناعية">أراضي صناعية</option>
+                            <option value="أرض زراعية">أراضي زراعية</option>
+                        </optgroup>
+                    </select>
+                    <div class="error" id="propertyTypeError">يرجى اختيار نوع العقار</div>
+                </div>
+ <div class="form-group">
+                    <label for="evaluationPurpose" class="required">الغرض من التقييم:</label>
+                    <select id="evaluationPurpose" required>
+                        <option value="">اختر الغرض من التقييم</option>
+                        <option value="البيع">البيع</option>
+                        <option value="الشراء">الشراء</option>
+                        <option value="التمويل">التمويل</option>
+                        <option value="الرهن العقاري">الرهن العقاري</option>
+                        <option value="التأمين">التأمين</option>
+                        <option value="المحاسبة">المحاسبة</option>
+                        <option value="المنازعات القضائية">المنازعات القضائية</option>
+                        <option value="التركات والميراث">التركات والميراث</option>
+                        <option value="الزكاة والضريبة">الزكاة والضريبة</option>
+                        <option value="التصفية">التصفية</option>
+                        <option value="الإفلاس">الإفلاس</option>
+                        <option value="إثبات الملكية">إثبات الملكية</option>
+                        <option value="التسعير الحكومي">التسعير الحكومي</option>
+                        <option value="التطوير والاستثمار">التطوير والاستثمار</option>
+                        <option value="تحديد الإيجارات العادل">تحديد الإيجارات العادل</option>
+                    </select>
+                    <div class="error" id="evaluationPurposeError">يرجى اختيار الغرض من التقييم</div>
+                </div>
+                <div class="form-group">
+                    <label for="landArea" class="required">مساحة الأرض (م²):</label>
+                    <input type="number" id="landArea" step="any" min="1" required>
+                    <div class="error" id="landAreaError">يرجى إدخال مساحة موجبة</div>
+                </div>
+                <div class="form-group" id="totalBuiltUpAreaGroup" style="display: none;">
+    <label for="totalBuiltUpArea" class="required">إجمالي المسطح المبني (م²):</label>
+    <input type="number" id="totalBuiltUpArea" name="total_built_up_area" step="any" min="1" placeholder="أدخل المسطح المبني الكلي">
+    <div class="error" id="totalBuiltUpAreaError">يرجى إدخال المسطح المبني بشكل صحيح</div>
+</div>
+
+<div class="form-group" id="constructionStatusGroup" style="display: none;">
+    <label for="constructionStatus" class="required">الحالة الحالية للبناء:</label>
+    <select id="constructionStatus">
+        <option value="">اختر الحالة</option>
+        <option value="skeleton">هيكل فقط</option>
+        <option value="partial">نصف تشطيب</option>
+        <option value="finished">مكتمل (جاهز للاستخدام)</option>
+    </select>
+    <div class="error" id="constructionStatusError">يرجى اختيار حالة البناء</div>
+</div>
+
+<div class="form-group" id="finishingLevelGroup" style="display: none;">
+    <label for="finishingLevel" class="required">مستوى التشطيب:</label>
+    <select id="finishingLevel">
+        <option value="">اختر مستوى التشطيب</option>
+        <option value="good">جيد</option>
+        <option value="excellent">ممتاز</option>
+        <option value="luxury">فاخر</option>
+    </select>
+    <div class="error" id="finishingLevelError">يرجى اختيار مستوى التشطيب</div>
+</div>
+               
+<div class="form-group">
+    <label for="buildingAge" class="required">العمر الفعلي للمبنى (سنوات):</label>
+    <input type="number" id="buildingAge" step="1" min="0" placeholder="أدخل العمر الفعلي">
+    <div class="error" id="buildingAgeError">يرجى إدخال العمر الفعلي</div>
+</div>
+
+<div class="form-group" id="structuralConditionGroup" style="display: none;">
+    <label for="structuralCondition" class="required">الحالة الإنشائية الحالية:</label>
+    <select id="structuralCondition">
+        <option value="">اختر الحالة الإنشائية</option>
+        <option value="excellent">ممتاز</option>
+        <option value="good">جيد</option>
+        <option value="fair">متوسط</option>
+        <option value="poor">ضعيف</option>
+    </select>
+    <div class="error" id="structuralConditionError">يرجى اختيار الحالة الإنشائية</div>
+</div>
+
+                <div class="form-group" id="buildingAreaGroup" style="display: none;">
+                    <label for="buildingArea" class="required">مساحة البناء (م²):</label>
+                    <input type="number" id="buildingArea" step="any" min="0" placeholder="أدخل مساحة البناء">
+                    <div class="error" id="buildingAreaError">يرجى إدخال مساحة بناء صالحة</div>
+                </div>
+                <div class="form-group" id="buildingAgeGroup" style="display: none;">
+                    <label for="buildingAge" class="required">عمر المبنى (سنوات):</label>
+                    <input type="number" id="buildingAge" step="1" min="0" placeholder="أدخل عمر المبنى">
+                    <div class="error" id="buildingAgeError">يرجى إدخال عمر مبنى صالح</div>
+                </div>
+                <div class="form-group">
+                    <label for="streetWidth" class="required">عرض الشارع:</label>
+                    <select id="streetWidth" required>
+                        <option value="">اختر عرض الشارع</option>
+                        <option value="10">شارع 10 م</option>
+                        <option value="15">شارع 15 م</option>
+                        <option value="20">شارع 20 م</option>
+                        <option value="30">شارع 30 م</option>
+                    </select>
+                    <div class="error" id="streetWidthError">يرجى اختيار عرض الشارع</div>
+                </div>
+                <div class="form-group">
+                    <label for="streetCount" class="required">عدد الشوارع:</label>
+                    <select id="streetCount" required>
+                        <option value="">اختر عدد الشوارع</option>
+                        <option value="شارع واحد">شارع واحد</option>
+                        <option value="شارعين - زاوية">شارعين - زاوية</option>
+                        <option value="شارعين - متظاهرة">شارعين - متظاهرة</option>
+                        <option value="ثلاث واجهات أو أكثر">ثلاث واجهات أو أكثر</option>
+                    </select>
+                    <div class="error" id="streetCountError">يرجى اختيار عدد الشوارع</div>
+                </div>
+                <div class="form-group">
+                    <label for="facade" class="required">الواجهة:</label>
+                    <select id="facade" required>
+                        <option value="">اختر الواجهة</option>
+                        <option value="north">شمالية</option>
+                        <option value="south">جنوبية</option>
+                        <option value="east">شرقية</option>
+                        <option value="west">غربية</option>
+                    </select>
+                    <div class="error" id="facadeError">يرجى اختيار الواجهة</div>
+                </div>
+                <div class="form-group">
+                    <label for="servicesProximity" class="required">قرب الخدمات:</label>
+                    <select id="servicesProximity" required>
+                        <option value="">اختر مستوى قرب الخدمات</option>
+                        <option value="عالي">عالي</option>
+                        <option value="متوسط">متوسط</option>
+                        <option value="منخفض">منخفض</option>
+                    </select>
+                    <div class="error" id="servicesProximityError">يرجى اختيار مستوى قرب الخدمات</div>
+                </div>
+                
+               
+                <div class="button-group">
+                    <button type="submit">حساب التقييم</button>
+                    <a id="whatsappLink" class="button" href="#" style="pointer-events: none; opacity: 0.6;" target="_blank">احصل على تقييم عقاري معتمد</a>
+                </div>
+            </form>
+            <div id="resultContainer" class="result-container">
+                <h3>نتيجة التقييم</h3>
+                <p id="evaluationResult"></p>
+                <div class="valuation-method" id="valuationMethod"></div>
+            </div>
+        </div>
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="map-fallback">فشل تحميل الخريطة. يرجى التحقق من الاتصال بالإنترنت أو تجربة متصفح آخر.</div>
+        </div>
+    </div>
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <h3>إدخال بيانات التواصل</h3>
+            <p>أدخل بياناتك لعرض النتيجة</p>
+            <form id="contactForm" onsubmit="submitContactForm(event)">
+                <div class="form-group">
+                    <label for="email" class="required">البريد الإلكتروني:</label>
+                    <input type="email" id="email" required placeholder="أدخل بريدك الإلكتروني">
+                    <div class="error" id="emailError">يرجى إدخال بريد إلكتروني صحيح</div>
+                </div>
+                <div class="form-group">
+                    <label for="phone" class="required">رقم الهاتف:</label>
+                    <input type="tel" id="phone" required placeholder="أدخل رقم هاتفك (مثال: 05xxxxxxxx)">
+                    <div class="error" id="phoneError">يرجى إدخال رقم هاتف صحيح</div>
+                </div>
+                <div class="button-group">
+                    <button type="submit">إرسال</button>
+                    <button type="button" class="cancel-btn" onclick="closeContactModal()">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+<div id="processingModal" class="modal">
+        <div class="modal-content">
+            <div class="loading-spinner"></div>
+            <h3>جاري المعالجة...</h3>
+            <p>يرجى الانتظار بينما نقوم بحساب التقييم العقاري</p>
+        </div>
+    </div>
+
+    <script>
+         // WordPress-compatible initialization
+(function() {
+    function initAll() {
+        if (typeof L !== 'undefined' && document.getElementById('map')) {
+            initializeForm();
+            initializeMap();
+        } else {
+            setTimeout(initAll, 500);
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAll);
+    } else {
+        initAll();
+    }
+})();
+    
+    
+
+        function initializeMap() {
+            const mapContainer = document.getElementById('map');
+            const mapFallback = document.querySelector('.map-fallback');
+
+            if (!mapContainer) {
+                if (mapFallback) mapFallback.style.display = 'block';
+                return;
+            }
+
+            let map;
+            let retries = 0;
+            const maxRetries = 3;
+
+            function tryInitializeMap() {
+                try {
+        if (!document.getElementById('map')) {
+            console.error('Map container not found');
+            return;
+        }
+        map = L.map('map', {
+            center: [24.7136, 46.6753],
+            zoom: 6
+        });
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+
+                    window.addEventListener('orientationchange', function() {
+                        setTimeout(function() {
+                            map.invalidateSize();
+                        }, 500);
+                    });
+
+                    window.addEventListener('resize', () => {
+                        setTimeout(() => {
+                            map.invalidateSize();
+                        }, 500);
+                    });
+
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 1000);
+
+                } catch (error) {
+                    retries++;
+                    if (retries < maxRetries) {
+                        setTimeout(tryInitializeMap, 1000);
+                    } else {
+                        if (mapFallback) mapFallback.style.display = 'block';
+                    }
+                    return;
+                }
+
+                const regionSelect = document.getElementById('region');
+                const citySelect = document.getElementById('city');
+                const districtInput = document.getElementById('district');
+
+                const cityCoordinates = {
+                    "الرياض": [24.7136, 46.6753],
+                    "جدة": [21.4858, 39.1925],
+                    "مكة المكرمة": [21.3891, 39.8579],
+                    "المدينة المنورة": [24.5247, 39.5692],
+                    "الدمام": [26.4344, 50.1033],
+                    "الخبر": [26.2794, 50.2083],
+                    "بريدة": [26.3260, 43.9750],
+                    "أبها": [18.2164, 42.5053],
+                    "تبوك": [28.3835, 36.5662],
+                    "حائل": [27.5114, 41.7208],
+                    "عرعر": [30.9753, 41.0197],
+                    "جازان": [16.8894, 42.5611],
+                    "نجران": [17.4924, 44.1277],
+                    "الباحة": [20.0129, 41.4677],
+                    "سكاكا": [29.9697, 40.2000]
+                };
+
+                let marker = null;
+
+                function updateMap() {
+                    const region = regionSelect.value;
+                    const city = citySelect.value;
+                    const district = districtInput.value.trim();
+
+                    let coords = [24.7136, 46.6753];
+                    let zoom = 6;
+
+                    if (city && cityCoordinates[city]) {
+                        coords = cityCoordinates[city];
+                        zoom = 12;
+                    } else if (region) {
+                        zoom = 8;
+                    }
+
+                    map.setView(coords, zoom);
+
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+
+                    if (city || district) {
+                        marker = L.marker(coords).addTo(map);
+                        const popupText = district ? `${district}, ${city}` : city;
+                        marker.bindPopup(popupText).openPopup();
+                    }
+
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 500);
+                }
+
+                regionSelect.addEventListener('change', updateMap);
+                citySelect.addEventListener('change', updateMap);
+                districtInput.addEventListener('input', updateMap);
+            }
+
+            tryInitializeMap();
+        }
+
+        function initializeForm() {
+            const regionsData = {
+                "الرياض": { "الرياض": 6000, "الخرج": 2500, "الدرعية": 5500, "الدلم": 2000, "الدوادمي": 1800, "الحريق": 1500, "الزلفي": 2200, "السليل": 1200, "الغاط": 1600, "القويعية": 1800, "المجمعة": 2000, "المزاحمية": 2500, "الهياتم": 1800, "حوطة بني تميم": 2000, "رماح": 1500, "شقراء": 1700, "عفيف": 1600, "نادق": 1300, "ضفاء": 1200, "وادي الدواسر": 1500, "الأفلاج": 1300, "ضرما": 2000, "ثادق": 1800 },
+                "مكة المكرمة": { "جدة": 6500, "مكة المكرمة": 5000, "الطائف": 3000, "الجموم": 2200, "الخرمة": 1600, "القنفذة": 2000, "الكامل": 1800, "الليث": 1700, "العرضيات": 1500, "بحرة": 2500, "تربة": 1600, "رابغ": 2200, "رنية": 1500, "ميسان": 1400, "نول": 1300, "أضم": 1500, "مدينة الملك عبد الله": 3500, "خليص": 2000 },
+                "المدينة المنورة": { "المدينة المنورة": 4000, "العلا": 2000, "الحناكية": 1600, "بدر": 1700, "خيبر": 1500, "مهد الذهب": 1400, "وادي الفرع": 1300, "ينبع": 2500, "العيص": 1500 },
+                "القصيم": { "بريدة": 3000, "البدائع": 1800, "البكيرية": 1900, "الرس": 2000, "الشماسية": 1700, "المذنب": 1800, "النبهانية": 1600, "رياض الخبراء": 1900, "عنيزة": 2500, "عظم الصفور": 1500, "عيون الجواء": 1600, "ضرية": 1500 },
+                "الشرقية": { "الدمام": 5500, "الجبيل": 3500, "الخبر": 5000, "الخفجي": 2500, "الظهران": 4000, "النعيرية": 2000, "العيون": 1900, "المبرز": 3000, "الهفوف": 3000, "الأحساء": 2500, "القطيف": 3500, "رأس تنورة": 2700, "بقيق": 2200, "ثقبة": 3000, "حفر الباطن": 2500, "سيهات": 2700, "صفوي": 2500, "عنك": 2200, "ناروت": 2000 },
+                "عسير": { "أبها": 3000, "أحد رفيدة": 2500, "الحرجة": 1500, "البرك": 1600, "البلقرن": 1700, "البيشة": 2000, "النماص": 1800, "بارق": 1600, "تتليت": 1500, "خميس مشيط": 2700, "رجل المع": 1700, "سراة عبيدة": 1600, "طريب": 1500, "ظهران الجنوب": 1700, "محايل عسير": 1800, "المجاردة": 1600 },
+                "تبوك": { "أملج": 2000, "تبوك": 2500, "تيماء": 1700, "حقل": 1800, "ضباء": 1900, "الوجه": 1800 },
+                "حائل": { "بقعاء": 1700, "تربة حائل": 1600, "حائل": 2200, "الحائط": 1500, "السنان": 1500, "السليمي": 1400, "الشملي": 1400, "الغزالة": 1500, "سميراء": 1600 },
+                "الحدود الشمالية": { "العويقيلة": 1300, "رفحاء": 1700, "طريف": 1600, "عرعر": 2000 },
+                "جازان": { "أبو عريش": 2000, "أحد المسارحة": 1800, "الحرث": 1500, "العارضة": 1600, "بدمة": 1500, "بيش": 1700, "جازان": 2200, "جزر فرسان": 1300, "ضمد": 1600, "صامطة": 1800, "صبيا": 1900, "غامد الزناد": 1500, "الدرب": 1600, "الريت": 1500, "هروب": 1500, "الداير": 1600, "الريث": 1500 },
+                "نجران": { "بدر الجنوب": 1500, "حبونا": 1600, "شرورة": 1800, "نجران": 2000, "الخرخير": 1300, "الوديعة": 1500, "بني حسن": 1600, "نار": 1300 },
+                "الباحة": { "الباحة": 2000, "الحجرة": 1600, "الحقيق": 1500, "القرى": 1500, "المخواة": 1700, "المندق": 1600, "بلجرشي": 1800, "قلوة": 1600, "العقيق": 1500 },
+                "الجوف": { "الغربات": 1300, "دومة الجندل": 1700, "سكاكا": 2000, "طبرجل": 1600, "القريات": 1800 }
+            };
+            const districtPrices = {
+                "مكة المكرمة": {
+                    "جدة": {
+                        "البلد": 1500,
+                        "الرويس": 1800,
+                        "البغدادية": 2000,
+                        "الشاطئ": 7500,
+                        "النخيل": 7000,
+                        "الحمراء": 5000,
+                        "default": 6500
+                    }
+                }
+            };
+            const regionSelect = document.getElementById('region');
+            const citySelect = document.getElementById('city');
+            const districtInput = document.getElementById('district');
+            const districtTypeSelect = document.getElementById('districtType');
+            const propertyType = document.getElementById('propertyType');
+            const buildingAreaGroup = document.getElementById('buildingAreaGroup');
+            const buildingAgeGroup = document.getElementById('buildingAgeGroup');
+            const contactModal = document.getElementById('contactModal');
+            const constructionStatus = document.getElementById('constructionStatus');
+            const finishingLevelGroup = document.getElementById('finishingLevelGroup');
+            const totalBuiltUpAreaGroup = document.getElementById('totalBuiltUpArea').parentElement;
+            const constructionStatusGroup = document.getElementById('constructionStatus').parentElement;
+            const structuralConditionGroup = document.getElementById('structuralCondition').parentElement;
+
+
+            constructionStatus.addEventListener('change', function() {
+                if (this.value === 'partial' || this.value === 'finished') {
+                    finishingLevelGroup.style.display = 'block';
+                    document.getElementById('finishingLevel').setAttribute('required', 'required');
+                } else {
+                    finishingLevelGroup.style.display = 'none';
+                    document.getElementById('finishingLevel').removeAttribute('required');
+                }
+    });         
+            let formData = null;
+
+            regionSelect.addEventListener('change', function() {
+                const selectedRegion = this.value;
+                citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+                citySelect.disabled = true;
+                districtInput.value = '';
+                districtTypeSelect.value = '';
+                if (selectedRegion && regionsData[selectedRegion]) {
+                    citySelect.disabled = false;
+                    Object.keys(regionsData[selectedRegion]).sort().forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city;
+                        option.textContent = city;
+                        citySelect.appendChild(option);
+                    });
+                }
+            });
+
+            citySelect.addEventListener('change', function() {
+                districtInput.value = '';
+                districtTypeSelect.value = '';
+            });
+
+            propertyType.addEventListener('change', function() {
+            if (this.value.includes("أرض")) {
+             //  Hide all building-related fields
+            totalBuiltUpAreaGroup.style.display = 'none';
+            constructionStatusGroup.style.display = 'none';
+            finishingLevelGroup.style.display = 'none';
+            buildingAreaGroup.style.display = 'none';
+            buildingAgeGroup.style.display = 'none';
+            structuralConditionGroup.style.display = 'none';
+
+            // Reset values
+            document.getElementById('totalBuiltUpArea').value = '';
+           document.getElementById('constructionStatus').value = '';
+           document.getElementById('finishingLevel').value = '';
+           document.getElementById('buildingArea').value = '';
+           document.getElementById('buildingAge').value = '';
+           document.getElementById('structuralCondition').value = '';
+    } else {
+        // Show all building-related fields
+        totalBuiltUpAreaGroup.style.display = 'block';
+        constructionStatusGroup.style.display = 'block';
+        structuralConditionGroup.style.display = 'block';
+        buildingAreaGroup.style.display = 'block';
+        buildingAgeGroup.style.display = 'block';
+
+        // Show finishingLevel only when constructionStatus is partial/finished
+        if (document.getElementById('constructionStatus').value === 'partial' ||
+            document.getElementById('constructionStatus').value === 'finished') {
+            finishingLevelGroup.style.display = 'block';
+        }
+    }
+});
+
+            
+
+            window.showContactModal = function(event) {
+                event.preventDefault();
+                let isValid = true;
+                const fields = [
+                    { id: 'region', errorId: 'regionError', message: 'يرجى اختيار المنطقة' },
+                    { id: 'city', errorId: 'cityError', message: 'يرجى اختيار المدينة' },
+                    { id: 'district', errorId: 'districtError', message: 'يرجى إدخال اسم الحي', validate: (value) => value.trim() !== '' },
+                    { id: 'districtType', errorId: 'districtTypeError', message: 'يرجى اختيار تصنيف الحي' },
+                    { id: 'landArea', errorId: 'landAreaError', message: 'يرجى إدخال مساحة موجبة', validate: (value) => value > 0 },
+                    { id: 'streetWidth', errorId: 'streetWidthError', message: 'يرجى اختيار عرض الشارع' },
+                    { id: 'streetCount', errorId: 'streetCountError', message: 'يرجى اختيار عدد الشوارع' },
+                    { id: 'facade', errorId: 'facadeError', message: 'يرجى اختيار الواجهة' },
+                    { id: 'servicesProximity', errorId: 'servicesProximityError', message: 'يرجى اختيار مستوى قرب الخدمات' },
+                    { id: 'propertyType', errorId: 'propertyTypeError', message: 'يرجى اختيار نوع العقار' },
+                    { id: 'evaluationPurpose', errorId: 'evaluationPurposeError', message: 'يرجى اختيار الغرض من التقييم' },
+                    { id: 'totalBuiltUpArea', errorId: 'totalBuiltUpAreaError', message: 'يرجى إدخال المسطح المبني بشكل صحيح', validate: (value) => value > 0 },
+                    { id: 'constructionStatus', errorId: 'constructionStatusError', message: 'يرجى اختيار حالة البناء' },
+                    { id: 'structuralCondition', errorId: 'structuralConditionError', message: 'يرجى اختيار الحالة الإنشائية' }
+                ];
+                fields.forEach(field => {
+    const element = document.getElementById(field.id);
+    const errorElement = document.getElementById(field.errorId);
+    const value = element.value;
+
+    // ✅ Only validate if the field group is visible
+    if (element.parentElement.style.display !== 'none') {
+        const valid = field.validate ? field.validate(value) : !!value;
+        if (!valid) {
+            errorElement.style.display = 'block';
+            isValid = false;
+        } else {
+            errorElement.style.display = 'none';
+        }
+    } else {
+        errorElement.style.display = 'none'; // no error if hidden
+    }
+});
+                const buildingArea = document.getElementById('buildingArea');
+                const buildingAreaError = document.getElementById('buildingAreaError');
+                if (buildingAreaGroup.style.display === 'block' && (!buildingArea.value || buildingArea.value < 0)) {
+                    buildingAreaError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    buildingAreaError.style.display = 'none';
+                }
+                const buildingAge = document.getElementById('buildingAge');
+                const buildingAgeError = document.getElementById('buildingAgeError');
+                if (buildingAgeGroup.style.display === 'block' && (!buildingAge.value || buildingAge.value < 0)) {
+                    buildingAgeError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    buildingAgeError.style.display = 'none';
+                }
+                if (isValid) {
+                    formData = {
+                    region: document.getElementById('region').value,
+    city: document.getElementById('city').value,
+    district: document.getElementById('district').value,
+    districtType: document.getElementById('districtType').value,
+    landArea: document.getElementById('landArea').value,
+    totalBuiltUpArea: document.getElementById('totalBuiltUpArea').value,
+    constructionStatus: document.getElementById('constructionStatus').value,
+    finishingLevel: document.getElementById('finishingLevel').value,
+    structuralCondition: document.getElementById('structuralCondition').value,
+    buildingArea: document.getElementById('buildingArea').value,
+    buildingAge: document.getElementById('buildingAge').value,
+    streetWidth: document.getElementById('streetWidth').value,
+    streetCount: document.getElementById('streetCount').value,
+    facade: document.getElementById('facade').value,
+    servicesProximity: document.getElementById('servicesProximity').value,
+    propertyType: document.getElementById('propertyType').value,
+    evaluationPurpose: document.getElementById('evaluationPurpose').value,
+    
+};
+
+                    contactModal.style.display = 'block';
+                } else {
+                    alert('يرجى ملء جميع الحقول المطلوبة بشكل صحيح');
+                }
+            };
+
+            window.closeContactModal = function() {
+                contactModal.style.display = 'none';
+                document.getElementById('email').value = '';
+                document.getElementById('phone').value = '';
+                document.getElementById('emailError').style.display = 'none';
+                document.getElementById('phoneError').style.display = 'none';
+            };
+
+            window.submitContactForm = function(event) {
+                event.preventDefault();
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const emailError = document.getElementById('emailError');
+                const phoneError = document.getElementById('phoneError');
+                let isValid = true;
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    emailError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    emailError.style.display = 'none';
+                }
+
+                const phoneRegex = /^05\d{8}$/;
+                if (!phoneRegex.test(phone)) {
+                    phoneError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    phoneError.style.display = 'none';
+                }
+
+                if (isValid) {
+                    closeContactModal();
+                    calculateAndSubmit(email, phone);
+                }
+            };
+
+            window.estimatePricePerMeter = function(region, city, propertyType, streetWidth, streetCount, evaluationPurpose, servicesProximity, buildingAge, districtType, district) {
+                let baseLandPrice = regionsData[region]?.[city] || 1500;
+                
+                // استخدام سعر الحي إذا كان متاحًا
+                if (districtPrices[region]?.[city]?.[district]) {
+                    baseLandPrice = districtPrices[region][city][district];
+                } else if (districtType === "قديم") {
+                    baseLandPrice *= 0.3;
+                } else if (districtType === "راقي") {
+                    baseLandPrice *= 1.2;
+                }
+
+                let buildingPrice = 0;
+                const propertyTypes = {
+                    "فيلا": { landMultiplier: 1.5, buildingPrice: 4500 },
+                    "عمارة سكنية": { landMultiplier: 1.4, buildingPrice: 4000 },
+                    "شقة": { landMultiplier: 1.3, buildingPrice: 3500 },
+                    "دور": { landMultiplier: 1.3, buildingPrice: 3500 },
+                    "بيت شعبي": { landMultiplier: 0.8, buildingPrice: 1500 },
+                    "استراحة": { landMultiplier: 1.2, buildingPrice: 3000 },
+                    "مبنى تجاري": { landMultiplier: 2.5, buildingPrice: 6500 },
+                    "عمارة تجارية": { landMultiplier: 2.3, buildingPrice: 6000 },
+                    "برج": { landMultiplier: 2.5, buildingPrice: 7000 },
+                    "محل تجاري": { landMultiplier: 2.2, buildingPrice: 5500 },
+                    "فندق": { landMultiplier: 2.7, buildingPrice: 8000 },
+                    "ورشة تجاري": { landMultiplier: 1.8, buildingPrice: 4500 },
+                    "أرض سكنية": { landMultiplier: 1.0, buildingPrice: 0 },
+                    "أرض تجارية": { landMultiplier: 2.0, buildingPrice: 0 },
+                    "أرض صناعية": { landMultiplier: 1.2, buildingPrice: 0 },
+                    "أرض زراعية": { landMultiplier: 0.5, buildingPrice: 0 }
+                };
+                const { landMultiplier, buildingPrice: typeBuildingPrice } = propertyTypes[propertyType] || { landMultiplier: 1.0, buildingPrice: 3500 };
+
+                baseLandPrice *= landMultiplier;
+                buildingPrice = typeBuildingPrice;
+
+                if (districtType === "قديم") {
+                    // بدون تأثير إضافي لعرض الشارع أو عدد الشوارع
+                } else {
+                    baseLandPrice += (+streetWidth) * 100;
+                    if (streetCount.includes("ثلاث")) baseLandPrice *= 1.3;
+                    else if (streetCount.includes("متظاهرة")) baseLandPrice *= 1.2;
+                    else if (streetCount.includes("زاوية")) baseLandPrice *= 1.15;
+                }
+
+                if (servicesProximity === "عالي" && districtType !== "قديم") {
+                    baseLandPrice *= 1.2;
+                } else if (servicesProximity === "متوسط" && districtType !== "قديم") {
+                    baseLandPrice *= 1.1;
+                }
+
+                if (evaluationPurpose === "التمويل" || evaluationPurpose === "الرهن العقاري") {
+                    baseLandPrice *= 1.1;
+                    buildingPrice *= 1.1;
+                } else if (evaluationPurpose === "البيع" || evaluationPurpose === "التطوير والاستثمار") {
+                    baseLandPrice *= 1.05;
+                    buildingPrice *= 1.05;
+                }
+
+                const depreciationRate = propertyType === "بيت شعبي" ? 0.02 : 0.02;
+                const buildingAgeValue = buildingAge ? parseInt(buildingAge) : 0;
+                const depreciationFactor = buildingAgeValue > 30 && propertyType === "بيت شعبي" ? 0.2 : Math.max(0.5, 1 - (depreciationRate * buildingAgeValue));
+                buildingPrice *= depreciationFactor;
+
+                return { landPrice: Math.round(baseLandPrice), buildingPrice: Math.round(buildingPrice) };
+            };
+            window.calculateAndSubmit = function(email, phone) {
+    // Show loading state
+    const submitButton = document.querySelector('button[type="submit"]');
+    const originalText = submitButton ? submitButton.textContent : '';
+    if (submitButton) {
+        submitButton.textContent = 'جاري المعالجة...';
+        submitButton.disabled = true;
+    }
+
+    // Your Contabo server endpoint - REPLACE WITH YOUR ACTUAL SERVER IP
+    const API_ENDPOINT = 'https://api.raavc.com/calculate';
+
+    // Map Arabic form fields to English API fields
+    const apiData = {
+        area: formData.region,
+        city: formData.city,
+        neighborhood: formData.district,
+        neighborhood_class: formData.districtType,
+        land_area: parseFloat(formData.landArea),
+        building_area: parseFloat(formData.buildingArea) || 0,
+        building_age: parseInt(formData.buildingAge) || 0,
+        street_view: `Street ${formData.streetWidth} m`,
+        num_streets: formData.streetCount,
+        interface: formData.facade,
+        proximity_services: formData.servicesProximity,
+        property_type: formData.propertyType,
+        evaluation_purpose: formData.evaluationPurpose,
+        total_built_up_area: formData.totalBuiltUpArea ? parseFloat(formData.totalBuiltUpArea) : null,
+        construction_status: formData.constructionStatus,
+        finishing_level: formData.finishingLevel,
+        structural_condition: formData.structuralCondition,
+        name: 'عميل RAAVC',
+        email: email,
+        phone: phone
+    };
+
+    console.log('🚀 Sending to API:', apiData); // For debugging
+
+    // Send to FastAPI backend
+    fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiData)
+    })
+    .then(response => {
+        console.log('📡 API Response status:', response.status);
+        if (response.redirected) {
+            // Backend returns redirect to result page
+            window.location.href = response.url;
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.error) {
+            alert('حدث خطأ: ' + data.error);
+            calculateLocally(email, phone); // Fallback
+        } else if (data) {
+            console.log('✅ API Success:', data);
+            // Handle JSON response if backend doesn't redirect
+            // You might need to format the API response here
+        }
+    })
+    .catch(error => {
+        console.error('❌ API Error:', error);
+        alert('حدث خطأ في الاتصال بالخادم. جاري التحويل للحساب المحلي...');
+        // Fallback to local calculation
+        calculateLocally(email, phone);
+    })
+    .finally(() => {
+        if (submitButton) {
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        }
+    });
+};
+
+           
+             
+        }
+    </script>
