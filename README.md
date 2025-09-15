@@ -792,7 +792,7 @@ The RAAVC Property Valuation System represents a comprehensive solution for auto
 
 The system's modular architecture allows for easy customization and expansion, while its robust technical foundation ensures reliable performance and scalability for growing businesses.
 
-For implementation, customization, or licensing inquiries, please contact our team at info@raavc.com.
+For implementation, customization, or licensing inquiries, please contact our team at arhammirker1@gmail.com.
 
 ---
 
