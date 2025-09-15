@@ -772,8 +772,8 @@ def get_market_data(city, neighborhood, property_type):
 ## 📞 Support & Contact Information
 
 ### Technical Support
-- **Email**: support@raavc.com
-- **Phone**: +966 580 069 350
+- **Email**: arhammirker1@gmail.com
+- **Phone**: +92 3282784739
 - **Website**: www.raavc.com
 
 ### Documentation Updates
