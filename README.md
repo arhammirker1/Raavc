@@ -773,7 +773,7 @@ def get_market_data(city, neighborhood, property_type):
 
 ### Technical Support
 - **Email**: arhammirker1@gmail.com
-- **Phone**: +92 3282784739
+- **Phone**: +92 (328) 2784739
 - **Website**: www.raavc.com
 
 ### Documentation Updates
@@ -796,6 +796,6 @@ For implementation, customization, or licensing inquiries, please contact our te
 
 ---
 
-*© 2025 RAAVC - Real Estate Valuation Experts. All rights reserved.*
+*© 2025 RAAVC - Arham Mirker. All rights reserved.*
 
 
