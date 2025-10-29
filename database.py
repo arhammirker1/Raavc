@@ -4,10 +4,10 @@ from psycopg2.extras import execute_batch
 
 # --- Update these with your TimescaleDB credentials ---
 DB_HOST = "localhost"    # SSH tunnel forwards to server
-DB_PORT = 5432
-DB_NAME = "property_transaction_db"
-DB_USER = "arham"
-DB_PASS = "N12345123-nn"
+DB_PORT = xxx
+DB_NAME = "xxx"
+DB_USER = "xxx"
+DB_PASS = "xxxx"
 
 def connect_db():
     return psycopg2.connect(
