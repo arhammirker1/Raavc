@@ -8,10 +8,10 @@ from rapidfuzz import process, fuzz
 # Database connection
 # ------------------------
 DB_USER = "arham"
-DB_PASSWORD = "N12345123-nn"  # your PostgreSQL password
+DB_PASSWORD = "xxx"  # your PostgreSQL password
 DB_HOST = "localhost"
-DB_PORT = 5432
-DB_NAME = "property_transaction_db"
+DB_PORT = xxx
+DB_NAME = "xxxx"
 
 engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
@@ -23,19 +23,12 @@ land_type3 = None
 land_type4 = None
 
 
-
-
-
-
-
 LAND_PROPERTY_TYPES = {
     "أرض سكنية",
     "أرض صناعية", 
     "أرض تجارية",
     "أرض زراعية"
 }
-
-
 
 # ----------------------------
 # Residential Factors
