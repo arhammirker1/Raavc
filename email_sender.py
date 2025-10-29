@@ -13,7 +13,7 @@ def send_company_notification(form_data, results):
     SMTP_SERVER = "smtp.gmail.com"
     SMTP_PORT = 465
     EMAIL_ADDRESS = "arhammirkerc8a@gmail.com"
-    EMAIL_PASSWORD = "dfex bset tikf mylk"
+    EMAIL_PASSWORD = "xxxxx"
     
     # Create email message
     msg = EmailMessage()
