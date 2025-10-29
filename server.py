@@ -61,7 +61,7 @@ class AssessmentRequest(BaseModel):
     email: str
     phone: str
 
-# Store results temporarily (in production, use Redis or database)
+# Store results temporarily--- awaiting production to update to database
 results_store = {}
 
 @app.post("/calculate")
