@@ -17,7 +17,7 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://raavc.com", "https://www.raavc.com", "http://localhost:3000"],  # Add both variants    
+    allow_origins=["https://raavc.com", "https://www.raavc.com", "http://localhost:3000", "https://www.ravc.sa],  # Add both variants    
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
